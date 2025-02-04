@@ -19,7 +19,7 @@ class TaskController extends Controller
     
         if ($validator->fails()) {
             return response()->json([
-                'errors' => $validator->errors()
+                'message' => $validator->errors()
             ], 422);
         }
     
@@ -64,12 +64,18 @@ class TaskController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'errors' => $validator->errors()
+                'message' => $validator->errors()
             ], 422);
         }
 
-        $task = Tasks::findOrFail($id);
+        $task = Tasks::find($id);
 
+        if(!$task){
+            return response()->json([
+                'message'=>"Task not found!"
+            ],404);
+        }
+        
         // Handle image data
         if ($request->hasFile('task_img')) {
 
@@ -83,9 +89,7 @@ class TaskController extends Controller
             $task->update(['task_img'=>$imgName]);
         }
 
-        $task->update(array_merge(
-            $request->except('_method','task_img')
-        ));
+        $task->update($request->except('_method','task_img'));
         
 
         return response()->json([
@@ -96,7 +100,7 @@ class TaskController extends Controller
 
     public function delete($id)
     {
-        $task = Tasks::findOrFail($id);
+        $task = Tasks::find($id);
 
         if(!$task){
             return response()->json([
